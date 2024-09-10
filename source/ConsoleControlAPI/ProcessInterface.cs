@@ -36,6 +36,8 @@ namespace ConsoleControlAPI
             _errorWorker.ProgressChanged += errorWorker_ProgressChanged;
         }
 
+        private StringBuilder _outputBuffer = new StringBuilder();
+
         /// <summary>
         /// Handles the ProgressChanged event of the outputWorker control.
         /// </summary>
@@ -43,13 +45,24 @@ namespace ConsoleControlAPI
         /// <param name="e">The <see cref="System.ComponentModel.ProgressChangedEventArgs"/> instance containing the event data.</param>
         private void outputWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            //  We must be passed a string in the user state.
+            // We must be passed a string in the user state.
             if (e.UserState is string state)
             {
-                //  Fire the output event.
-                FireProcessOutputEvent(state);
+                // Append the new output to the buffer.
+                _outputBuffer.Append(state);
+
+                // Check if the output ends with a newline (indicating the message is complete).
+                if (state.EndsWith("\n"))
+                {
+                    // Fire the output event with the complete message.
+                    FireProcessOutputEvent(_outputBuffer.ToString());
+
+                    // Clear the buffer for the next message.
+                    _outputBuffer.Clear();
+                }
             }
         }
+
 
         /// <summary>
         /// Handles the DoWork event of the outputWorker control.
@@ -145,7 +158,7 @@ namespace ConsoleControlAPI
             // Set the working directory to the directory of the process
             var directoryName = Path.GetDirectoryName(processStartInfo.FileName);
             if (directoryName != null) processStartInfo.WorkingDirectory = directoryName;
-            
+
             //  Create the process.
             _process = new Process();
             _process.EnableRaisingEvents = true;

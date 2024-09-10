@@ -14,6 +14,48 @@ namespace ConsoleControl.WPF
     /// </summary>
     public partial class ConsoleControl : UserControl
     {
+        public RichTextBox RichTextBox
+        {
+            get => RichTextBoxConsole;
+            set => RichTextBoxConsole = value;
+        }
+        
+        public SolidColorBrush RichTextBoxBackground
+        {
+            get => (SolidColorBrush)RichTextBoxConsole.Background;
+            set => RichTextBoxConsole.Background = value;
+        }
+        
+        public SolidColorBrush RichTextBoxForeground
+        {
+            get => (SolidColorBrush)RichTextBoxConsole.Foreground;
+            set => RichTextBoxConsole.Foreground = value;
+        }
+        
+        public SolidColorBrush RichTextBoxSelectionBrush
+        {
+            get => (SolidColorBrush)RichTextBoxConsole.SelectionBrush;
+            set => RichTextBoxConsole.SelectionBrush = value;
+        }
+        
+        public SolidColorBrush RichTextBoxCaretBrush
+        {
+            get => (SolidColorBrush)RichTextBoxConsole.CaretBrush;
+            set => RichTextBoxConsole.CaretBrush = value;
+        }
+        
+        public SolidColorBrush RichTextBoxBorderBrush
+        {
+            get => (SolidColorBrush)RichTextBoxConsole.BorderBrush;
+            set => RichTextBoxConsole.BorderBrush = value;
+        }
+        
+        public Thickness RichTextBoxBorderThickness
+        {
+            get => RichTextBoxConsole.BorderThickness;
+            set => RichTextBoxConsole.BorderThickness = value;
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ConsoleControl"/> class.
         /// </summary>
@@ -21,6 +63,8 @@ namespace ConsoleControl.WPF
         {
             InitializeComponent();
 
+            RichTextBox.BorderThickness = new Thickness(0);
+            
             //  Handle process events.
             _processInterface.OnProcessOutput += ProcessInterface_OnProcessOutput;
             _processInterface.OnProcessError += ProcessInterface_OnProcessError;
@@ -28,7 +72,7 @@ namespace ConsoleControl.WPF
             _processInterface.OnProcessExit += ProcessInterface_OnProcessExit;
 
             //  Wait for key down messages on the rich text box.
-            richTextBoxConsole.PreviewKeyDown += richTextBoxConsole_PreviewKeyDown;
+            RichTextBoxConsole.PreviewKeyDown += richTextBoxConsole_PreviewKeyDown;
         }
 
         /// <summary>
@@ -68,7 +112,6 @@ namespace ConsoleControl.WPF
             //  Write the output, in white
             WriteOutput(args.Content, color);
 
-
             //  Fire the output event.
             FireProcessOutputEvent(args);
         }
@@ -99,7 +142,7 @@ namespace ConsoleControl.WPF
                     WriteOutput($"{Environment.NewLine}{_processInterface.ProcessFileName} exited.", Color.FromArgb(255, 0, 255, 0));
                 }
 
-                richTextBoxConsole.IsReadOnly = true;
+                RichTextBoxConsole.IsReadOnly = true;
 
                 //  And we're no longer running.
                 IsProcessRunning = false;
@@ -113,7 +156,7 @@ namespace ConsoleControl.WPF
         /// <param name="e">The <see cref="System.Windows.Input.KeyEventArgs" /> instance containing the event data.</param>
         private void richTextBoxConsole_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            var caretPosition = richTextBoxConsole.GetCaretPosition();
+            var caretPosition = RichTextBoxConsole.GetCaretPosition();
             var delta = caretPosition - _inputStartPos;
             var inReadOnlyZone = delta < 0;
 
@@ -139,7 +182,7 @@ namespace ConsoleControl.WPF
             if (e.Key == Key.Return)
             {
                 //  Get the input.
-                var input = new TextRange(richTextBoxConsole.GetPointerAt(_inputStartPos), richTextBoxConsole.Selection.Start).Text;
+                var input = new TextRange(RichTextBoxConsole.GetPointerAt(_inputStartPos), RichTextBoxConsole.Selection.Start).Text;
 
                 //  Write the input (without echoing).
                 WriteInput(input, Colors.White, false);
@@ -159,17 +202,26 @@ namespace ConsoleControl.WPF
 
             RunOnUIDispatcher(() =>
             {
-                //  Write the output.
-                var range = new TextRange(richTextBoxConsole.GetEndPointer(), richTextBoxConsole.GetEndPointer())
+                // Ensure the endPointer is correctly positioned at the end of the text.
+                var endPointer = RichTextBoxConsole.GetEndPointer();
+
+                // Create a new TextRange starting and ending at the endPointer.
+                var range = new TextRange(endPointer, endPointer)
                 {
                     Text = output
                 };
+
+                // Apply the color to the TextRange.
                 range.ApplyPropertyValue(TextElement.ForegroundProperty, new SolidColorBrush(color));
 
-                //  Record the new input start.
-                richTextBoxConsole.ScrollToEnd();
-                richTextBoxConsole.SetCaretToEnd();
-                _inputStartPos = richTextBoxConsole.GetCaretPosition();
+                // Scroll to the end of the RichTextBox to ensure the new text is visible.
+                RichTextBoxConsole.ScrollToEnd();
+
+                // Set the caret to the end of the RichTextBox.
+                RichTextBoxConsole.SetCaretToEnd();
+
+                // Record the new input start position.
+                _inputStartPos = RichTextBoxConsole.GetCaretPosition();
             });
         }
 
@@ -178,7 +230,7 @@ namespace ConsoleControl.WPF
         /// </summary>
         public void ClearOutput()
         {
-            richTextBoxConsole.Document.Blocks.Clear();
+            RichTextBoxConsole.Document.Blocks.Clear();
             _inputStartPos = 0;
         }
 
@@ -195,9 +247,9 @@ namespace ConsoleControl.WPF
                 //  Are we echoing?
                 if (echo)
                 {
-                    richTextBoxConsole.Selection.ApplyPropertyValue(TextBlock.ForegroundProperty, new SolidColorBrush(color));
-                    richTextBoxConsole.AppendText(input);
-                    _inputStartPos = richTextBoxConsole.GetEndPosition();
+                    RichTextBoxConsole.Selection.ApplyPropertyValue(TextBlock.ForegroundProperty, new SolidColorBrush(color));
+                    RichTextBoxConsole.AppendText(input);
+                    _inputStartPos = RichTextBoxConsole.GetEndPosition();
                 }
 
                 _lastInput = input;
@@ -261,7 +313,7 @@ namespace ConsoleControl.WPF
             {
                 //  If we enable input, make the control not read only.
                 if (IsInputEnabled)
-                    richTextBoxConsole.IsReadOnly = false;
+                    RichTextBoxConsole.IsReadOnly = false;
 
                 //  We're now running.
                 IsProcessRunning = true;

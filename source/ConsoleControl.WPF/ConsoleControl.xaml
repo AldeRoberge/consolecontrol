@@ -17,9 +17,11 @@
     </UserControl.Background>
     <UserControl.FontSize>12</UserControl.FontSize>
 
+    
+    
     <!-- The internal rich text box for the console. -->
     <RichTextBox
-        x:Name="richTextBoxConsole" Foreground="White"
+        x:Name="RichTextBoxConsole" Foreground="White"
         FontFamily="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type consoleControl:ConsoleControl}}, Path=FontFamily}"
         Background="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type consoleControl:ConsoleControl}}, Path=Background}"
         FontSize="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type consoleControl:ConsoleControl}}, Path=FontSize}"
