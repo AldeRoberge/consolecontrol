@@ -78,6 +78,9 @@ namespace ConsoleControl
 
             //  Fire the output event.
             FireConsoleOutputEvent(args.Content);
+
+            // Scroll the textbox to the end.
+            InternalRichTextBox.SelectionStart = InternalRichTextBox.Text.Length;
         }
 
         /// <summary>
