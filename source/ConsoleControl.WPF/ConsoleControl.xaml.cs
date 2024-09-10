@@ -61,7 +61,7 @@ namespace ConsoleControl.WPF
             else if (content.Contains(" wrn "))
                 color = Color.FromArgb(255, 255, 165, 0);
             else if (args.Content.Contains(" dbg "))
-                color = Color.FromArgb(255, 0, 0, 255);
+                color = Color.FromArgb(255, 122, 122, 122);
             else if (args.Content.Contains(" vrb "))
                 color = Color.FromArgb(255, 156, 156, 156);
 
