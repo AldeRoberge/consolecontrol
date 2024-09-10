@@ -52,8 +52,22 @@ namespace ConsoleControl.WPF
         /// <param name="args">The <see cref="ProcessEventArgs"/> instance containing the event data.</param>
         private void ProcessInterface_OnProcessOutput(object sender, ProcessEventArgs args)
         {
+            Color color = Color.FromArgb(255, 255, 255, 255);
+
+            var content = args.Content.ToLower();
+
+            if (content.Contains(" err "))
+                color = Color.FromArgb(255, 255, 0, 0);
+            else if (content.Contains(" wrn "))
+                color = Color.FromArgb(255, 255, 165, 0);
+            else if (args.Content.Contains(" dbg "))
+                color = Color.FromArgb(255, 0, 0, 255);
+            else if (args.Content.Contains(" vrb "))
+                color = Color.FromArgb(255, 156, 156, 156);
+
             //  Write the output, in white
-            WriteOutput(args.Content, Colors.White);
+            WriteOutput(args.Content, color);
+
 
             //  Fire the output event.
             FireProcessOutputEvent(args);
@@ -82,7 +96,7 @@ namespace ConsoleControl.WPF
                 //  Are we showing diagnostics?
                 if (ShowDiagnostics)
                 {
-                    WriteOutput(Environment.NewLine + _processInterface.ProcessFileName + " exited.", Color.FromArgb(255, 0, 255, 0));
+                    WriteOutput($"{Environment.NewLine}{_processInterface.ProcessFileName} exited.", Color.FromArgb(255, 0, 255, 0));
                 }
 
                 richTextBoxConsole.IsReadOnly = true;
@@ -233,11 +247,11 @@ namespace ConsoleControl.WPF
             //  Are we showing diagnostics?
             if (ShowDiagnostics)
             {
-                WriteOutput("Preparing to run " + processStartInfo.FileName, Color.FromArgb(255, 0, 255, 0));
+                WriteOutput($"Preparing to run {processStartInfo.FileName}", Color.FromArgb(255, 0, 255, 0));
                 if (!string.IsNullOrEmpty(processStartInfo.Arguments))
-                    WriteOutput(" with arguments " + processStartInfo.Arguments + "." + Environment.NewLine, Color.FromArgb(255, 0, 255, 0));
+                    WriteOutput($" with arguments {processStartInfo.Arguments}.{Environment.NewLine}", Color.FromArgb(255, 0, 255, 0));
                 else
-                    WriteOutput("." + Environment.NewLine, Color.FromArgb(255, 0, 255, 0));
+                    WriteOutput($".{Environment.NewLine}", Color.FromArgb(255, 0, 255, 0));
             }
 
             //  Start the process.

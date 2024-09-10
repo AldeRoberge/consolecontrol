@@ -73,14 +73,35 @@ namespace ConsoleControl
         /// <param name="args">The <see cref="ProcessEventArgs"/> instance containing the event data.</param>
         private void ProcessInterfaceOnProcessOutput(object sender, ProcessEventArgs args)
         {
+            Color color = Color.White;
+
+            var content = args.Content.ToLower();
+
+            if (content.Contains(" err "))
+                color = Color.Red;
+            else if (content.Contains(" wrn "))
+                color = Color.Yellow;
+            else if (content.Contains(" nfo "))
+                color = Color.Blue;
+            else if (args.Content.Contains(" dbg "))
+                color = Color.Green;
+            else if (args.Content.Contains(" vrb "))
+                color = Color.Gray;
+            else if (args.Content.Contains(" trc "))
+                color = Color.Gray;
+
             //  Write the output, in white
-            WriteOutput(args.Content, Color.White);
+            WriteOutput(args.Content, color);
 
             //  Fire the output event.
             FireConsoleOutputEvent(args.Content);
 
-            // Scroll the textbox to the end.
-            InternalRichTextBox.SelectionStart = InternalRichTextBox.Text.Length;
+            // Scroll the textbox to the end if the user has moved the scrollbar down
+            if (InternalRichTextBox.SelectionStart >= InternalRichTextBox.Text.Length - 1)
+            {
+                InternalRichTextBox.SelectionStart = InternalRichTextBox.Text.Length;
+                InternalRichTextBox.ScrollToCaret();
+            }
         }
 
         /// <summary>
@@ -103,7 +124,7 @@ namespace ConsoleControl
             //  Are we showing diagnostics?
             if (ShowDiagnostics)
             {
-                WriteOutput(Environment.NewLine + _processInterface.ProcessFileName + " exited.", Color.FromArgb(255, 0, 255, 0));
+                WriteOutput($"{Environment.NewLine}{_processInterface.ProcessFileName} exited.", Color.FromArgb(255, 0, 255, 0));
             }
 
             if (!this.IsHandleCreated)
@@ -261,11 +282,11 @@ namespace ConsoleControl
             //  Are we showing diagnostics?
             if (ShowDiagnostics)
             {
-                WriteOutput("Preparing to run " + fileName, Color.FromArgb(255, 0, 255, 0));
+                WriteOutput($"Preparing to run {fileName}", Color.FromArgb(255, 0, 255, 0));
                 if (!string.IsNullOrEmpty(arguments))
-                    WriteOutput(" with arguments " + arguments + "." + Environment.NewLine, Color.FromArgb(255, 0, 255, 0));
+                    WriteOutput($" with arguments {arguments}.{Environment.NewLine}", Color.FromArgb(255, 0, 255, 0));
                 else
-                    WriteOutput("." + Environment.NewLine, Color.FromArgb(255, 0, 255, 0));
+                    WriteOutput($".{Environment.NewLine}", Color.FromArgb(255, 0, 255, 0));
             }
 
             //  Start the process.
@@ -285,11 +306,11 @@ namespace ConsoleControl
             //  Are we showing diagnostics?
             if (ShowDiagnostics)
             {
-                WriteOutput("Preparing to run " + processStartInfo.FileName, Color.FromArgb(255, 0, 255, 0));
+                WriteOutput($"Preparing to run {processStartInfo.FileName}", Color.FromArgb(255, 0, 255, 0));
                 if (!string.IsNullOrEmpty(processStartInfo.Arguments))
-                    WriteOutput(" with arguments " + processStartInfo.Arguments + "." + Environment.NewLine, Color.FromArgb(255, 0, 255, 0));
+                    WriteOutput($" with arguments {processStartInfo.Arguments}.{Environment.NewLine}", Color.FromArgb(255, 0, 255, 0));
                 else
-                    WriteOutput("." + Environment.NewLine, Color.FromArgb(255, 0, 255, 0));
+                    WriteOutput($".{Environment.NewLine}", Color.FromArgb(255, 0, 255, 0));
             }
 
             //  Start the process.

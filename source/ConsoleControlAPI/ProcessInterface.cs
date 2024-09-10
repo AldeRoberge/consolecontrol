@@ -156,7 +156,7 @@ namespace ConsoleControlAPI
             catch (Exception e)
             {
                 //  Trace the exception.
-                Trace.WriteLine("Failed to start process " + processStartInfo.FileName + " with arguments '" + processStartInfo.Arguments + "'");
+                Trace.WriteLine($"Failed to start process {processStartInfo.FileName} with arguments '{processStartInfo.Arguments}'");
                 Trace.WriteLine(e.ToString());
                 return;
             }

@@ -75,7 +75,7 @@ namespace ConsoleControlSample.WPF
         {
             //  Update the state.
             if (consoleControl.IsProcessRunning)
-                viewModel.ProcessState = "Running " + System.IO.Path.GetFileName(consoleControl.ProcessInterface.ProcessFileName);
+                viewModel.ProcessState = $"Running {System.IO.Path.GetFileName(consoleControl.ProcessInterface.ProcessFileName)}";
             else
                 viewModel.ProcessState = "Not Running";
         }

@@ -74,7 +74,7 @@ namespace ConsoleControlSample
         {
             //  Update the state.
             if (consoleControl.IsProcessRunning)
-                toolStripStatusLabelConsoleState.Text = "Running " + System.IO.Path.GetFileName(consoleControl.ProcessInterface.ProcessFileName);
+                toolStripStatusLabelConsoleState.Text = $"Running {System.IO.Path.GetFileName(consoleControl.ProcessInterface.ProcessFileName)}";
             else
                 toolStripStatusLabelConsoleState.Text = "Not Running";
 
