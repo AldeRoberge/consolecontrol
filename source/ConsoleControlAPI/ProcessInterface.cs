@@ -16,7 +16,7 @@ namespace ConsoleControlAPI
     /// <summary>
     /// A class the wraps a process, allowing programmatic input and output.
     /// </summary>
-    public class ProcessInterface: IDisposable
+    public class ProcessInterface : IDisposable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessInterface"/> class.
@@ -286,26 +286,31 @@ namespace ConsoleControlAPI
                 outputWorker.Dispose();
                 outputWorker = null;
             }
+
             if (errorWorker != null)
             {
                 errorWorker.Dispose();
                 errorWorker = null;
             }
+
             if (process != null)
             {
                 process.Dispose();
                 process = null;
             }
+
             if (inputWriter != null)
             {
                 inputWriter.Dispose();
                 inputWriter = null;
             }
+
             if (outputReader != null)
             {
                 outputReader.Dispose();
                 outputReader = null;
             }
+
             if (errorReader != null)
             {
                 errorReader.Dispose();
@@ -324,27 +329,27 @@ namespace ConsoleControlAPI
         /// The current process.
         /// </summary>
         private Process process;
-        
+
         /// <summary>
         /// The input writer.
         /// </summary>
         private StreamWriter inputWriter;
-        
+
         /// <summary>
         /// The output reader.
         /// </summary>
         private TextReader outputReader;
-        
+
         /// <summary>
         /// The error reader.
         /// </summary>
         private TextReader errorReader;
-        
+
         /// <summary>
         /// The output worker.
         /// </summary>
         private BackgroundWorker outputWorker = new BackgroundWorker();
-        
+
         /// <summary>
         /// The error worker.
         /// </summary>
@@ -359,7 +364,7 @@ namespace ConsoleControlAPI
         /// Arguments sent to the current process.
         /// </summary>
         private string processArguments;
-        
+
         /// <summary>
         /// Occurs when process output is produced.
         /// </summary>
@@ -379,7 +384,7 @@ namespace ConsoleControlAPI
         /// Occurs when the process ends.
         /// </summary>
         public event ProcessEventHandler OnProcessExit;
-        
+
         /// <summary>
         /// Gets a value indicating whether this instance is process running.
         /// </summary>

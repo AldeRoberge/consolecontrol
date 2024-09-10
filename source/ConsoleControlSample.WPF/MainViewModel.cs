@@ -22,9 +22,9 @@ namespace ConsoleControlSample.WPF
             StopProcessCommand = new Command(() => { });
             ClearOutputCommand = new Command(() => { });
         }
-        
+
         private NotifyingProperty ProcessStateProperty =
-          new NotifyingProperty("ProcessState", typeof(string), default(string));
+            new NotifyingProperty("ProcessState", typeof(string), default(string));
 
         /// <summary>
         /// Gets or sets the state of the process.
@@ -41,11 +41,7 @@ namespace ConsoleControlSample.WPF
         /// <summary>
         /// Gets the start command prompt command.
         /// </summary>
-        public Command StartCommandPromptCommand
-        {
-            get;
-            private set;
-        }
+        public Command StartCommandPromptCommand { get; private set; }
 
         /// <summary>
         /// Gets or sets the start new process command.
@@ -53,11 +49,7 @@ namespace ConsoleControlSample.WPF
         /// <value>
         /// The start new process command.
         /// </value>
-        public Command StartNewProcessCommand
-        {
-            get;
-            private set;
-        }
+        public Command StartNewProcessCommand { get; private set; }
 
         /// <summary>
         /// Gets or sets the stop process command.
@@ -65,19 +57,11 @@ namespace ConsoleControlSample.WPF
         /// <value>
         /// The stop process command.
         /// </value>
-        public Command StopProcessCommand
-        {
-            get;
-            private set;
-        }
+        public Command StopProcessCommand { get; private set; }
 
         /// <summary>
         /// Gets the clear output command.
         /// </summary>
-        public Command ClearOutputCommand
-        {
-            get;
-            private set;
-        }
+        public Command ClearOutputCommand { get; private set; }
     }
 }

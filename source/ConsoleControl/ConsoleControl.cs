@@ -102,14 +102,11 @@ namespace ConsoleControl
             {
                 WriteOutput(Environment.NewLine + processInterace.ProcessFileName + " exited.", Color.FromArgb(255, 0, 255, 0));
             }
-            
+
             if (!this.IsHandleCreated)
                 return;
             //  Read only again.
-            Invoke((Action)(() =>
-            {
-                richTextBoxConsole.ReadOnly = true;
-            }));
+            Invoke((Action)(() => { richTextBoxConsole.ReadOnly = true; }));
         }
 
         /// <summary>
@@ -139,18 +136,18 @@ namespace ConsoleControl
             {
                 //  Get key mappings for this key event?
                 var mappings = from k in keyMappings
-                               where 
-                               (k.KeyCode == e.KeyCode &&
-                               k.IsAltPressed == e.Alt &&
-                               k.IsControlPressed == e.Control &&
-                               k.IsShiftPressed == e.Shift)
-                               select k;
+                    where
+                        (k.KeyCode == e.KeyCode &&
+                         k.IsAltPressed == e.Alt &&
+                         k.IsControlPressed == e.Control &&
+                         k.IsShiftPressed == e.Shift)
+                    select k;
 
                 //  Go through each mapping, send the message.
                 //foreach (var mapping in mappings)
                 //{
-                    //SendKeysEx.SendKeys(CurrentProcessHwnd, mapping.SendKeysMapping);
-                    //inputWriter.WriteLine(mapping.StreamMapping);
+                //SendKeysEx.SendKeys(CurrentProcessHwnd, mapping.SendKeysMapping);
+                //inputWriter.WriteLine(mapping.StreamMapping);
 //WriteInput("\x3", Color.White, false);
                 //}
 
@@ -170,15 +167,15 @@ namespace ConsoleControl
             {
                 //  Allow arrows and Ctrl-C.
                 if (!(e.KeyCode == Keys.Left ||
-                    e.KeyCode == Keys.Right ||
-                    e.KeyCode == Keys.Up ||
-                    e.KeyCode == Keys.Down ||
-                    (e.KeyCode == Keys.C && e.Control)))
+                      e.KeyCode == Keys.Right ||
+                      e.KeyCode == Keys.Up ||
+                      e.KeyCode == Keys.Down ||
+                      (e.KeyCode == Keys.C && e.Control)))
                 {
                     e.SuppressKeyPress = true;
                 }
             }
-            
+
             //  Write the input if we hit return and we're NOT in the read only zone.
             if (e.KeyCode == Keys.Return && !isInReadOnlyZone)
             {
@@ -197,10 +194,10 @@ namespace ConsoleControl
         /// <param name="color">The color.</param>
         public void WriteOutput(string output, Color color)
         {
-            if (string.IsNullOrEmpty(lastInput) == false && 
+            if (string.IsNullOrEmpty(lastInput) == false &&
                 (output == lastInput || output.Replace("\r\n", "") == lastInput))
                 return;
-                
+
             if (!this.IsHandleCreated)
                 return;
 
@@ -250,7 +247,6 @@ namespace ConsoleControl
             }));
         }
 
-        
 
         /// <summary>
         /// Runs a process.
@@ -309,7 +305,7 @@ namespace ConsoleControl
             //  Stop the interface.
             processInterace.StopProcess();
         }
-        
+
         /// <summary>
         /// Fires the console output event.
         /// </summary>
@@ -338,7 +334,7 @@ namespace ConsoleControl
         /// The internal process interface used to interface with the process.
         /// </summary>
         private readonly ProcessInterface processInterace = new ProcessInterface();
-        
+
         /// <summary>
         /// Current position that input starts at.
         /// </summary>
@@ -376,11 +372,7 @@ namespace ConsoleControl
         ///   <c>true</c> if show diagnostics; otherwise, <c>false</c>.
         /// </value>
         [Category("Console Control"), Description("Show diagnostic information, such as exceptions.")]
-        public bool ShowDiagnostics
-        {
-            get;
-            set;
-        }
+        public bool ShowDiagnostics { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is input enabled.
@@ -407,11 +399,7 @@ namespace ConsoleControl
         /// 	<c>true</c> if [send keyboard commands to process]; otherwise, <c>false</c>.
         /// </value>
         [Category("Console Control"), Description("If true, special keyboard commands like Ctrl-C and tab are sent to the process.")]
-        public bool SendKeyboardCommandsToProcess
-        {
-            get;
-            set;
-        }
+        public bool SendKeyboardCommandsToProcess { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is process running.
@@ -507,5 +495,7 @@ namespace ConsoleControl
     /// <summary>
     /// Used to allow us to find resources properly.
     /// </summary>
-    public class Resfinder {}
+    public class Resfinder
+    {
+    }
 }

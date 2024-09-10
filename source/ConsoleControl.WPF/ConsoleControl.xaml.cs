@@ -20,7 +20,7 @@ namespace ConsoleControl.WPF
         public ConsoleControl()
         {
             InitializeComponent();
-            
+
             //  Handle process events.
             processInterface.OnProcessOutput += ProcessInterface_OnProcessOutput;
             processInterface.OnProcessError += ProcessInterface_OnProcessError;
@@ -78,18 +78,18 @@ namespace ConsoleControl.WPF
         {
             //  Read only again.
             RunOnUIDispatcher(() =>
+            {
+                //  Are we showing diagnostics?
+                if (ShowDiagnostics)
                 {
-                    //  Are we showing diagnostics?
-                    if (ShowDiagnostics)
-                    {
-                        WriteOutput(Environment.NewLine + processInterface.ProcessFileName + " exited.", Color.FromArgb(255, 0, 255, 0));
-                    }
+                    WriteOutput(Environment.NewLine + processInterface.ProcessFileName + " exited.", Color.FromArgb(255, 0, 255, 0));
+                }
 
-                    richTextBoxConsole.IsReadOnly = true;
+                richTextBoxConsole.IsReadOnly = true;
 
-                    //  And we're no longer running.
-                    IsProcessRunning = false;
-                });
+                //  And we're no longer running.
+                IsProcessRunning = false;
+            });
         }
 
         /// <summary>
@@ -112,10 +112,10 @@ namespace ConsoleControl.WPF
             {
                 //  Allow arrows and Ctrl-C.
                 if (!(e.Key == Key.Left ||
-                    e.Key == Key.Right ||
-                    e.Key == Key.Up ||
-                    e.Key == Key.Down ||
-                    (e.Key == Key.C && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))))
+                      e.Key == Key.Right ||
+                      e.Key == Key.Up ||
+                      e.Key == Key.Down ||
+                      (e.Key == Key.C && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))))
                 {
                     e.Handled = true;
                 }
@@ -151,7 +151,7 @@ namespace ConsoleControl.WPF
                     Text = output
                 };
                 range.ApplyPropertyValue(TextElement.ForegroundProperty, new SolidColorBrush(color));
-                
+
                 //  Record the new input start.
                 richTextBoxConsole.ScrollToEnd();
                 richTextBoxConsole.SetCaretToEnd();
@@ -177,23 +177,23 @@ namespace ConsoleControl.WPF
         public void WriteInput(string input, Color color, bool echo)
         {
             RunOnUIDispatcher(() =>
+            {
+                //  Are we echoing?
+                if (echo)
                 {
-                    //  Are we echoing?
-                    if (echo)
-                    {
-                        richTextBoxConsole.Selection.ApplyPropertyValue(TextBlock.ForegroundProperty, new SolidColorBrush(color));
-                        richTextBoxConsole.AppendText(input);
-                        inputStartPos = richTextBoxConsole.GetEndPosition();
-                    }
+                    richTextBoxConsole.Selection.ApplyPropertyValue(TextBlock.ForegroundProperty, new SolidColorBrush(color));
+                    richTextBoxConsole.AppendText(input);
+                    inputStartPos = richTextBoxConsole.GetEndPosition();
+                }
 
-                    lastInput = input;
+                lastInput = input;
 
-                    //  Write the input.
-                    processInterface.WriteInput(input);
+                //  Write the input.
+                processInterface.WriteInput(input);
 
-                    //  Fire the event.
-                    FireProcessInputEvent(new ProcessEventArgs(input));
-                });
+                //  Fire the event.
+                FireProcessInputEvent(new ProcessEventArgs(input));
+            });
         }
 
         /// <summary>
@@ -251,7 +251,6 @@ namespace ConsoleControl.WPF
 
                 //  We're now running.
                 IsProcessRunning = true;
-                    
             });
         }
 
@@ -293,12 +292,12 @@ namespace ConsoleControl.WPF
         /// Current position that input starts at.
         /// </summary>
         private int inputStartPos;
-        
+
         /// <summary>
         /// The last input string (used so that we can make sure we don't echo input twice).
         /// </summary>
         private string lastInput;
-        
+
         /// <summary>
         /// Occurs when console output is produced.
         /// </summary>
@@ -308,10 +307,10 @@ namespace ConsoleControl.WPF
         /// Occurs when console input is produced.
         /// </summary>
         public event ProcessEventHandler OnProcessInput;
-          
-        private static readonly DependencyProperty ShowDiagnosticsProperty = 
-          DependencyProperty.Register("ShowDiagnostics", typeof(bool), typeof(ConsoleControl),
-          new PropertyMetadata(false, OnShowDiagnosticsChanged));
+
+        private static readonly DependencyProperty ShowDiagnosticsProperty =
+            DependencyProperty.Register("ShowDiagnostics", typeof(bool), typeof(ConsoleControl),
+                new PropertyMetadata(false, OnShowDiagnosticsChanged));
 
         /// <summary>
         /// Gets or sets a value indicating whether to show diagnostics.
@@ -328,11 +327,11 @@ namespace ConsoleControl.WPF
         private static void OnShowDiagnosticsChanged(DependencyObject o, DependencyPropertyChangedEventArgs args)
         {
         }
-        
-        
-        private static readonly DependencyProperty IsInputEnabledProperty = 
-          DependencyProperty.Register("IsInputEnabled", typeof(bool), typeof(ConsoleControl),
-          new PropertyMetadata(true));
+
+
+        private static readonly DependencyProperty IsInputEnabledProperty =
+            DependencyProperty.Register("IsInputEnabled", typeof(bool), typeof(ConsoleControl),
+                new PropertyMetadata(true));
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has input enabled.
@@ -342,13 +341,13 @@ namespace ConsoleControl.WPF
         /// </value>
         public bool IsInputEnabled
         {
-          get { return (bool)GetValue(IsInputEnabledProperty); }
-          set { SetValue(IsInputEnabledProperty, value); }
+            get { return (bool)GetValue(IsInputEnabledProperty); }
+            set { SetValue(IsInputEnabledProperty, value); }
         }
-        
+
         internal static readonly DependencyPropertyKey IsProcessRunningPropertyKey =
-          DependencyProperty.RegisterReadOnly("IsProcessRunning", typeof(bool), typeof(ConsoleControl),
-          new PropertyMetadata(false));
+            DependencyProperty.RegisterReadOnly("IsProcessRunning", typeof(bool), typeof(ConsoleControl),
+                new PropertyMetadata(false));
 
         private static readonly DependencyProperty IsProcessRunningProperty = IsProcessRunningPropertyKey.DependencyProperty;
 

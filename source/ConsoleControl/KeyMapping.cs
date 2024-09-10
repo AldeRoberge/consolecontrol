@@ -41,11 +41,7 @@ namespace ConsoleControl
         /// <value>
         /// 	<c>true</c> if this instance is control pressed; otherwise, <c>false</c>.
         /// </value>
-        public bool IsControlPressed
-        {
-            get;
-            set;
-        }
+        public bool IsControlPressed { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether alt is pressed.
@@ -53,11 +49,7 @@ namespace ConsoleControl
         /// <value>
         /// 	<c>true</c> if this instance is alt pressed; otherwise, <c>false</c>.
         /// </value>
-        public bool IsAltPressed
-        {
-            get;
-            set;
-        }
+        public bool IsAltPressed { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is shift pressed.
@@ -65,11 +57,7 @@ namespace ConsoleControl
         /// <value>
         /// 	<c>true</c> if this instance is shift pressed; otherwise, <c>false</c>.
         /// </value>
-        public bool IsShiftPressed
-        {
-            get;
-            set;
-        }
+        public bool IsShiftPressed { get; set; }
 
         /// <summary>
         /// Gets or sets the key code.
@@ -77,11 +65,7 @@ namespace ConsoleControl
         /// <value>
         /// The key code.
         /// </value>
-        public Keys KeyCode
-        {
-            get;
-            set;
-        }
+        public Keys KeyCode { get; set; }
 
         /// <summary>
         /// Gets or sets the send keys mapping.
@@ -89,11 +73,7 @@ namespace ConsoleControl
         /// <value>
         /// The send keys mapping.
         /// </value>
-        public string SendKeysMapping
-        {
-            get;
-            set;
-        }
+        public string SendKeysMapping { get; set; }
 
         /// <summary>
         /// Gets or sets the stream mapping.
@@ -101,10 +81,6 @@ namespace ConsoleControl
         /// <value>
         /// The stream mapping.
         /// </value>
-        public string StreamMapping
-        {
-            get;
-            set;
-        }
+        public string StreamMapping { get; set; }
     }
 }

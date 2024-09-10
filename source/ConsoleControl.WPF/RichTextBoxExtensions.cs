@@ -59,7 +59,7 @@ namespace ConsoleControl.WPF
         /// <param name="richTextBox">Rich text box to work with</param>
         public static void SetCaretToEnd(this RichTextBox richTextBox)
         {
-        richTextBox.CaretPosition = richTextBox.GetEndPointer();
+            richTextBox.CaretPosition = richTextBox.GetEndPointer();
         }
     }
 }
