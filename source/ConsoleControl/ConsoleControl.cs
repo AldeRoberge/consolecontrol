@@ -43,13 +43,13 @@ namespace ConsoleControl
             InitialiseKeyMappings();
 
             //  Handle process events.
-            processInterace.OnProcessOutput += processInterace_OnProcessOutput;
-            processInterace.OnProcessError += processInterace_OnProcessError;
-            processInterace.OnProcessInput += processInterace_OnProcessInput;
-            processInterace.OnProcessExit += processInterace_OnProcessExit;
+            _processInterface.OnProcessOutput += ProcessInterfaceOnProcessOutput;
+            _processInterface.OnProcessError += ProcessInterfaceOnProcessError;
+            _processInterface.OnProcessInput += ProcessInterfaceOnProcessInput;
+            _processInterface.OnProcessExit += ProcessInterfaceOnProcessExit;
 
             //  Wait for key down messages on the rich text box.
-            richTextBoxConsole.KeyDown += richTextBoxConsole_KeyDown;
+            InternalRichTextBox.KeyDown += richTextBoxConsole_KeyDown;
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace ConsoleControl
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="args">The <see cref="ProcessEventArgs"/> instance containing the event data.</param>
-        void processInterace_OnProcessError(object sender, ProcessEventArgs args)
+        private void ProcessInterfaceOnProcessError(object sender, ProcessEventArgs args)
         {
             //  Write the output, in red
             WriteOutput(args.Content, Color.Red);
@@ -71,7 +71,7 @@ namespace ConsoleControl
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="args">The <see cref="ProcessEventArgs"/> instance containing the event data.</param>
-        void processInterace_OnProcessOutput(object sender, ProcessEventArgs args)
+        private void ProcessInterfaceOnProcessOutput(object sender, ProcessEventArgs args)
         {
             //  Write the output, in white
             WriteOutput(args.Content, Color.White);
@@ -85,7 +85,7 @@ namespace ConsoleControl
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="args">The <see cref="ProcessEventArgs"/> instance containing the event data.</param>
-        void processInterace_OnProcessInput(object sender, ProcessEventArgs args)
+        private void ProcessInterfaceOnProcessInput(object sender, ProcessEventArgs args)
         {
             throw new NotImplementedException();
         }
@@ -95,18 +95,18 @@ namespace ConsoleControl
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="args">The <see cref="ProcessEventArgs"/> instance containing the event data.</param>
-        void processInterace_OnProcessExit(object sender, ProcessEventArgs args)
+        private void ProcessInterfaceOnProcessExit(object sender, ProcessEventArgs args)
         {
             //  Are we showing diagnostics?
             if (ShowDiagnostics)
             {
-                WriteOutput(Environment.NewLine + processInterace.ProcessFileName + " exited.", Color.FromArgb(255, 0, 255, 0));
+                WriteOutput(Environment.NewLine + _processInterface.ProcessFileName + " exited.", Color.FromArgb(255, 0, 255, 0));
             }
 
             if (!this.IsHandleCreated)
                 return;
             //  Read only again.
-            Invoke((Action)(() => { richTextBoxConsole.ReadOnly = true; }));
+            Invoke((Action)(() => { InternalRichTextBox.ReadOnly = true; }));
         }
 
         /// <summary>
@@ -115,10 +115,10 @@ namespace ConsoleControl
         private void InitialiseKeyMappings()
         {
             //  Map 'tab'.
-            keyMappings.Add(new KeyMapping(false, false, false, Keys.Tab, "{TAB}", "\t"));
+            _keyMappings.Add(new KeyMapping(false, false, false, Keys.Tab, "{TAB}", "\t"));
 
             //  Map 'Ctrl-C'.
-            keyMappings.Add(new KeyMapping(true, false, false, Keys.C, "^(c)", "\x03\r\n"));
+            _keyMappings.Add(new KeyMapping(true, false, false, Keys.C, "^(c)", "\x03\r\n"));
         }
 
         /// <summary>
@@ -126,16 +126,16 @@ namespace ConsoleControl
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.Windows.Forms.KeyEventArgs"/> instance containing the event data.</param>
-        void richTextBoxConsole_KeyDown(object sender, KeyEventArgs e)
+        private void richTextBoxConsole_KeyDown(object sender, KeyEventArgs e)
         {
             //  Check whether we are in the read-only zone.
-            var isInReadOnlyZone = richTextBoxConsole.SelectionStart < inputStart;
+            var isInReadOnlyZone = InternalRichTextBox.SelectionStart < _inputStart;
 
             //  Are we sending keyboard commands to the process?
             if (SendKeyboardCommandsToProcess && IsProcessRunning)
             {
                 //  Get key mappings for this key event?
-                var mappings = from k in keyMappings
+                var mappings = from k in _keyMappings
                     where
                         (k.KeyCode == e.KeyCode &&
                          k.IsAltPressed == e.Alt &&
@@ -160,7 +160,7 @@ namespace ConsoleControl
             }
 
             //  If we're at the input point and it's backspace, bail.
-            if ((richTextBoxConsole.SelectionStart <= inputStart) && e.KeyCode == Keys.Back) e.SuppressKeyPress = true;
+            if ((InternalRichTextBox.SelectionStart <= _inputStart) && e.KeyCode == Keys.Back) e.SuppressKeyPress = true;
 
             //  Are we in the read-only zone?
             if (isInReadOnlyZone)
@@ -180,7 +180,7 @@ namespace ConsoleControl
             if (e.KeyCode == Keys.Return && !isInReadOnlyZone)
             {
                 //  Get the input.
-                string input = richTextBoxConsole.Text.Substring(inputStart, (richTextBoxConsole.SelectionStart) - inputStart);
+                string input = InternalRichTextBox.Text.Substring(_inputStart, (InternalRichTextBox.SelectionStart) - _inputStart);
 
                 //  Write the input (without echoing).
                 WriteInput(input, Color.White, false);
@@ -194,8 +194,8 @@ namespace ConsoleControl
         /// <param name="color">The color.</param>
         public void WriteOutput(string output, Color color)
         {
-            if (string.IsNullOrEmpty(lastInput) == false &&
-                (output == lastInput || output.Replace("\r\n", "") == lastInput))
+            if (string.IsNullOrEmpty(_lastInput) == false &&
+                (output == _lastInput || output.Replace("\r\n", "") == _lastInput))
                 return;
 
             if (!this.IsHandleCreated)
@@ -204,9 +204,9 @@ namespace ConsoleControl
             Invoke((Action)(() =>
             {
                 //  Write the output.
-                richTextBoxConsole.SelectionColor = color;
-                richTextBoxConsole.SelectedText += output;
-                inputStart = richTextBoxConsole.SelectionStart;
+                InternalRichTextBox.SelectionColor = color;
+                InternalRichTextBox.SelectedText += output;
+                _inputStart = InternalRichTextBox.SelectionStart;
             }));
         }
 
@@ -215,8 +215,8 @@ namespace ConsoleControl
         /// </summary>
         public void ClearOutput()
         {
-            richTextBoxConsole.Clear();
-            inputStart = 0;
+            InternalRichTextBox.Clear();
+            _inputStart = 0;
         }
 
         /// <summary>
@@ -232,15 +232,15 @@ namespace ConsoleControl
                 //  Are we echoing?
                 if (echo)
                 {
-                    richTextBoxConsole.SelectionColor = color;
-                    richTextBoxConsole.SelectedText += input;
-                    inputStart = richTextBoxConsole.SelectionStart;
+                    InternalRichTextBox.SelectionColor = color;
+                    InternalRichTextBox.SelectedText += input;
+                    _inputStart = InternalRichTextBox.SelectionStart;
                 }
 
-                lastInput = input;
+                _lastInput = input;
 
                 //  Write the input.
-                processInterace.WriteInput(input);
+                _processInterface.WriteInput(input);
 
                 //  Fire the event.
                 FireConsoleInputEvent(input);
@@ -266,11 +266,11 @@ namespace ConsoleControl
             }
 
             //  Start the process.
-            processInterace.StartProcess(fileName, arguments);
+            _processInterface.StartProcess(fileName, arguments);
 
             //  If we enable input, make the control not read only.
             if (IsInputEnabled)
-                richTextBoxConsole.ReadOnly = false;
+                InternalRichTextBox.ReadOnly = false;
         }
 
         /// <summary>
@@ -290,11 +290,11 @@ namespace ConsoleControl
             }
 
             //  Start the process.
-            processInterace.StartProcess(processStartInfo);
+            _processInterface.StartProcess(processStartInfo);
 
             //  If we enable input, make the control not read only.
             if (IsInputEnabled)
-                richTextBoxConsole.ReadOnly = false;
+                InternalRichTextBox.ReadOnly = false;
         }
 
         /// <summary>
@@ -303,7 +303,7 @@ namespace ConsoleControl
         public void StopProcess()
         {
             //  Stop the interface.
-            processInterace.StopProcess();
+            _processInterface.StopProcess();
         }
 
         /// <summary>
@@ -314,8 +314,7 @@ namespace ConsoleControl
         {
             //  Get the event.
             var theEvent = OnConsoleOutput;
-            if (theEvent != null)
-                theEvent(this, new ConsoleEventArgs(content));
+            theEvent?.Invoke(this, new ConsoleEventArgs(content));
         }
 
         /// <summary>
@@ -326,34 +325,33 @@ namespace ConsoleControl
         {
             //  Get the event.
             var theEvent = OnConsoleInput;
-            if (theEvent != null)
-                theEvent(this, new ConsoleEventArgs(content));
+            theEvent?.Invoke(this, new ConsoleEventArgs(content));
         }
 
         /// <summary>
         /// The internal process interface used to interface with the process.
         /// </summary>
-        private readonly ProcessInterface processInterace = new ProcessInterface();
+        private readonly ProcessInterface _processInterface = new();
 
         /// <summary>
         /// Current position that input starts at.
         /// </summary>
-        int inputStart = -1;
+        private int _inputStart = -1;
 
         /// <summary>
         /// The is input enabled flag.
         /// </summary>
-        private bool isInputEnabled = true;
+        private bool _isInputEnabled = true;
 
         /// <summary>
         /// The last input string (used so that we can make sure we don't echo input twice).
         /// </summary>
-        private string lastInput;
+        private string _lastInput;
 
         /// <summary>
         /// The key mappings.
         /// </summary>
-        private List<KeyMapping> keyMappings = new List<KeyMapping>();
+        private List<KeyMapping> _keyMappings = new();
 
         /// <summary>
         /// Occurs when console output is produced.
@@ -383,12 +381,12 @@ namespace ConsoleControl
         [Category("Console Control"), Description("If true, the user can key in input.")]
         public bool IsInputEnabled
         {
-            get { return isInputEnabled; }
+            get => _isInputEnabled;
             set
             {
-                isInputEnabled = value;
+                _isInputEnabled = value;
                 if (IsProcessRunning)
-                    richTextBoxConsole.ReadOnly = !value;
+                    InternalRichTextBox.ReadOnly = !value;
             }
         }
 
@@ -408,37 +406,25 @@ namespace ConsoleControl
         /// 	<c>true</c> if this instance is process running; otherwise, <c>false</c>.
         /// </value>
         [Browsable(false)]
-        public bool IsProcessRunning
-        {
-            get { return processInterace.IsProcessRunning; }
-        }
+        public bool IsProcessRunning => _processInterface.IsProcessRunning;
 
         /// <summary>
         /// Gets the internal rich text box.
         /// </summary>
         [Browsable(false)]
-        public RichTextBox InternalRichTextBox
-        {
-            get { return richTextBoxConsole; }
-        }
+        public RichTextBox InternalRichTextBox { get; private set; }
 
         /// <summary>
         /// Gets the process interface.
         /// </summary>
         [Browsable(false)]
-        public ProcessInterface ProcessInterface
-        {
-            get { return processInterace; }
-        }
+        public ProcessInterface ProcessInterface => ProcessInterface;
 
         /// <summary>
         /// Gets the key mappings.
         /// </summary>
         [Browsable(false)]
-        public List<KeyMapping> KeyMappings
-        {
-            get { return keyMappings; }
-        }
+        public List<KeyMapping> KeyMappings => _keyMappings;
 
         /// <summary>
         /// Gets or sets the font of the text displayed by the control.
@@ -452,18 +438,16 @@ namespace ConsoleControl
         ///   </PermissionSet>
         public override Font Font
         {
-            get
-            {
+            get =>
                 //  Return the base class font.
-                return base.Font;
-            }
+                base.Font;
             set
             {
                 //  Set the base class font...
                 base.Font = value;
 
                 //  ...and the internal control font.
-                richTextBoxConsole.Font = value;
+                InternalRichTextBox.Font = value;
             }
         }
 
@@ -476,18 +460,16 @@ namespace ConsoleControl
         ///   </PermissionSet>
         public override Color BackColor
         {
-            get
-            {
+            get =>
                 //  Return the base class background.
-                return base.BackColor;
-            }
+                base.BackColor;
             set
             {
                 //  Set the base class background...
                 base.BackColor = value;
 
                 //  ...and the internal control background.
-                richTextBoxConsole.BackColor = value;
+                InternalRichTextBox.BackColor = value;
             }
         }
     }

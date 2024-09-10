@@ -14,22 +14,22 @@ namespace ConsoleControlAPI
         /// <returns>If the function succeeds, the return value is nonzero.
         /// If the function fails, the return value is zero. To get extended error information, call GetLastError.</returns>
         [DllImport("Kernel32.dll")]
-        public static extern bool GenerateConsoleCtrlEvent(CTRL_EVENT dwCtrlEvent, UInt32 dwProcessGroupId);
+        public static extern bool GenerateConsoleCtrlEvent(CtrlEvent dwCtrlEvent, UInt32 dwProcessGroupId);
     }
 
     /// <summary>
     /// The type of signal to be generated.
     /// </summary>
-    internal enum CTRL_EVENT : uint
+    internal enum CtrlEvent : uint
     {
         /// <summary>
         /// Generates a CTRL+C signal. This signal cannot be generated for process groups. If dwProcessGroupId is nonzero, this function will succeed, but the CTRL+C signal will not be received by processes within the specified process group.
         /// </summary>
-        CTRL_C_EVENT = 0,
+        CtrlCEvent = 0,
 
         /// <summary>
         /// Generates a CTRL+BREAK signal.
         /// </summary>
-        CTRL_BREAK_EVENT = 1
+        CtrlBreakEvent = 1
     }
 }

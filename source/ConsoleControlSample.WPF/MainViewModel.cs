@@ -23,8 +23,7 @@ namespace ConsoleControlSample.WPF
             ClearOutputCommand = new Command(() => { });
         }
 
-        private NotifyingProperty ProcessStateProperty =
-            new NotifyingProperty("ProcessState", typeof(string), default(string));
+        private NotifyingProperty _processStateProperty = new("ProcessState", typeof(string), default(string));
 
         /// <summary>
         /// Gets or sets the state of the process.
@@ -34,8 +33,8 @@ namespace ConsoleControlSample.WPF
         /// </value>
         public string ProcessState
         {
-            get { return (string)GetValue(ProcessStateProperty); }
-            set { SetValue(ProcessStateProperty, value); }
+            get => (string)GetValue(_processStateProperty);
+            set => SetValue(_processStateProperty, value);
         }
 
         /// <summary>

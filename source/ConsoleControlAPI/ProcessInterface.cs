@@ -24,16 +24,16 @@ namespace ConsoleControlAPI
         public ProcessInterface()
         {
             //  Configure the output worker.
-            outputWorker.WorkerReportsProgress = true;
-            outputWorker.WorkerSupportsCancellation = true;
-            outputWorker.DoWork += outputWorker_DoWork;
-            outputWorker.ProgressChanged += outputWorker_ProgressChanged;
+            _outputWorker.WorkerReportsProgress = true;
+            _outputWorker.WorkerSupportsCancellation = true;
+            _outputWorker.DoWork += outputWorker_DoWork;
+            _outputWorker.ProgressChanged += outputWorker_ProgressChanged;
 
             //  Configure the error worker.
-            errorWorker.WorkerReportsProgress = true;
-            errorWorker.WorkerSupportsCancellation = true;
-            errorWorker.DoWork += errorWorker_DoWork;
-            errorWorker.ProgressChanged += errorWorker_ProgressChanged;
+            _errorWorker.WorkerReportsProgress = true;
+            _errorWorker.WorkerSupportsCancellation = true;
+            _errorWorker.DoWork += errorWorker_DoWork;
+            _errorWorker.ProgressChanged += errorWorker_ProgressChanged;
         }
 
         /// <summary>
@@ -41,13 +41,13 @@ namespace ConsoleControlAPI
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.ComponentModel.ProgressChangedEventArgs"/> instance containing the event data.</param>
-        void outputWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        private void outputWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             //  We must be passed a string in the user state.
-            if (e.UserState is string)
+            if (e.UserState is string state)
             {
                 //  Fire the output event.
-                FireProcessOutputEvent(e.UserState as string);
+                FireProcessOutputEvent(state);
             }
         }
 
@@ -56,9 +56,9 @@ namespace ConsoleControlAPI
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.ComponentModel.DoWorkEventArgs"/> instance containing the event data.</param>
-        void outputWorker_DoWork(object sender, DoWorkEventArgs e)
+        private void outputWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            while (outputWorker.CancellationPending == false)
+            while (_outputWorker.CancellationPending == false)
             {
                 //  Any lines to read?
                 int count;
@@ -66,9 +66,9 @@ namespace ConsoleControlAPI
                 do
                 {
                     var builder = new StringBuilder();
-                    count = outputReader.Read(buffer, 0, 1024);
+                    count = _outputReader.Read(buffer, 0, 1024);
                     builder.Append(buffer, 0, count);
-                    outputWorker.ReportProgress(0, builder.ToString());
+                    _outputWorker.ReportProgress(0, builder.ToString());
                 } while (count > 0);
 
                 System.Threading.Thread.Sleep(200);
@@ -80,13 +80,13 @@ namespace ConsoleControlAPI
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.ComponentModel.ProgressChangedEventArgs"/> instance containing the event data.</param>
-        void errorWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        private void errorWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             //  The userstate must be a string.
-            if (e.UserState is string)
+            if (e.UserState is string state)
             {
                 //  Fire the error event.
-                FireProcessErrorEvent(e.UserState as string);
+                FireProcessErrorEvent(state);
             }
         }
 
@@ -95,9 +95,9 @@ namespace ConsoleControlAPI
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.ComponentModel.DoWorkEventArgs"/> instance containing the event data.</param>
-        void errorWorker_DoWork(object sender, DoWorkEventArgs e)
+        private void errorWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            while (errorWorker.CancellationPending == false)
+            while (_errorWorker.CancellationPending == false)
             {
                 //  Any lines to read?
                 int count;
@@ -105,9 +105,9 @@ namespace ConsoleControlAPI
                 do
                 {
                     var builder = new StringBuilder();
-                    count = errorReader.Read(buffer, 0, 1024);
+                    count = _errorReader.Read(buffer, 0, 1024);
                     builder.Append(buffer, 0, count);
-                    errorWorker.ReportProgress(0, builder.ToString());
+                    _errorWorker.ReportProgress(0, builder.ToString());
                 } while (count > 0);
 
                 System.Threading.Thread.Sleep(200);
@@ -143,15 +143,15 @@ namespace ConsoleControlAPI
             processStartInfo.RedirectStandardOutput = true;
 
             //  Create the process.
-            process = new Process();
-            process.EnableRaisingEvents = true;
-            process.StartInfo = processStartInfo;
-            process.Exited += currentProcess_Exited;
+            _process = new Process();
+            _process.EnableRaisingEvents = true;
+            _process.StartInfo = processStartInfo;
+            _process.Exited += currentProcess_Exited;
 
             //  Start the process.
             try
             {
-                process.Start();
+                _process.Start();
             }
             catch (Exception e)
             {
@@ -162,17 +162,17 @@ namespace ConsoleControlAPI
             }
 
             //  Store name and arguments.
-            processFileName = processStartInfo.FileName;
-            processArguments = processStartInfo.Arguments;
+            _processFileName = processStartInfo.FileName;
+            _processArguments = processStartInfo.Arguments;
 
             //  Create the readers and writers.
-            inputWriter = process.StandardInput;
-            outputReader = TextReader.Synchronized(process.StandardOutput);
-            errorReader = TextReader.Synchronized(process.StandardError);
+            _inputWriter = _process.StandardInput;
+            _outputReader = TextReader.Synchronized(_process.StandardOutput);
+            _errorReader = TextReader.Synchronized(_process.StandardError);
 
             //  Run the workers that read output and error.
-            outputWorker.RunWorkerAsync();
-            errorWorker.RunWorkerAsync();
+            _outputWorker.RunWorkerAsync();
+            _errorWorker.RunWorkerAsync();
         }
 
         /// <summary>
@@ -185,7 +185,7 @@ namespace ConsoleControlAPI
                 return;
 
             //  Kill the process.
-            process.Kill();
+            _process.Kill();
         }
 
         /// <summary>
@@ -193,20 +193,20 @@ namespace ConsoleControlAPI
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        void currentProcess_Exited(object sender, EventArgs e)
+        private void currentProcess_Exited(object sender, EventArgs e)
         {
             //  Fire process exited.
-            FireProcessExitEvent(process.ExitCode);
+            FireProcessExitEvent(_process.ExitCode);
 
             //  Disable the threads.
-            outputWorker.CancelAsync();
-            errorWorker.CancelAsync();
-            inputWriter = null;
-            outputReader = null;
-            errorReader = null;
-            process = null;
-            processFileName = null;
-            processArguments = null;
+            _outputWorker.CancelAsync();
+            _errorWorker.CancelAsync();
+            _inputWriter = null;
+            _outputReader = null;
+            _errorReader = null;
+            _process = null;
+            _processFileName = null;
+            _processArguments = null;
         }
 
         /// <summary>
@@ -217,8 +217,7 @@ namespace ConsoleControlAPI
         {
             //  Get the event and fire it.
             var theEvent = OnProcessOutput;
-            if (theEvent != null)
-                theEvent(this, new ProcessEventArgs(content));
+            theEvent?.Invoke(this, new ProcessEventArgs(content));
         }
 
         /// <summary>
@@ -229,8 +228,7 @@ namespace ConsoleControlAPI
         {
             //  Get the event and fire it.
             var theEvent = OnProcessError;
-            if (theEvent != null)
-                theEvent(this, new ProcessEventArgs(content));
+            theEvent?.Invoke(this, new ProcessEventArgs(content));
         }
 
         /// <summary>
@@ -241,8 +239,7 @@ namespace ConsoleControlAPI
         {
             //  Get the event and fire it.
             var theEvent = OnProcessInput;
-            if (theEvent != null)
-                theEvent(this, new ProcessEventArgs(content));
+            theEvent?.Invoke(this, new ProcessEventArgs(content));
         }
 
         /// <summary>
@@ -253,8 +250,7 @@ namespace ConsoleControlAPI
         {
             //  Get the event and fire it.
             var theEvent = OnProcessExit;
-            if (theEvent != null)
-                theEvent(this, new ProcessEventArgs(code));
+            theEvent?.Invoke(this, new ProcessEventArgs(code));
         }
 
         /// <summary>
@@ -265,8 +261,8 @@ namespace ConsoleControlAPI
         {
             if (IsProcessRunning)
             {
-                inputWriter.WriteLine(input);
-                inputWriter.Flush();
+                _inputWriter.WriteLine(input);
+                _inputWriter.Flush();
             }
         }
 
@@ -281,40 +277,40 @@ namespace ConsoleControlAPI
         ///   <c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected void Dispose(bool native)
         {
-            if (outputWorker != null)
+            if (_outputWorker != null)
             {
-                outputWorker.Dispose();
-                outputWorker = null;
+                _outputWorker.Dispose();
+                _outputWorker = null;
             }
 
-            if (errorWorker != null)
+            if (_errorWorker != null)
             {
-                errorWorker.Dispose();
-                errorWorker = null;
+                _errorWorker.Dispose();
+                _errorWorker = null;
             }
 
-            if (process != null)
+            if (_process != null)
             {
-                process.Dispose();
-                process = null;
+                _process.Dispose();
+                _process = null;
             }
 
-            if (inputWriter != null)
+            if (_inputWriter != null)
             {
-                inputWriter.Dispose();
-                inputWriter = null;
+                _inputWriter.Dispose();
+                _inputWriter = null;
             }
 
-            if (outputReader != null)
+            if (_outputReader != null)
             {
-                outputReader.Dispose();
-                outputReader = null;
+                _outputReader.Dispose();
+                _outputReader = null;
             }
 
-            if (errorReader != null)
+            if (_errorReader != null)
             {
-                errorReader.Dispose();
-                errorReader = null;
+                _errorReader.Dispose();
+                _errorReader = null;
             }
         }
 
@@ -328,42 +324,42 @@ namespace ConsoleControlAPI
         /// <summary>
         /// The current process.
         /// </summary>
-        private Process process;
+        private Process _process;
 
         /// <summary>
         /// The input writer.
         /// </summary>
-        private StreamWriter inputWriter;
+        private StreamWriter _inputWriter;
 
         /// <summary>
         /// The output reader.
         /// </summary>
-        private TextReader outputReader;
+        private TextReader _outputReader;
 
         /// <summary>
         /// The error reader.
         /// </summary>
-        private TextReader errorReader;
+        private TextReader _errorReader;
 
         /// <summary>
         /// The output worker.
         /// </summary>
-        private BackgroundWorker outputWorker = new BackgroundWorker();
+        private BackgroundWorker _outputWorker = new();
 
         /// <summary>
         /// The error worker.
         /// </summary>
-        private BackgroundWorker errorWorker = new BackgroundWorker();
+        private BackgroundWorker _errorWorker = new();
 
         /// <summary>
         /// Current process file name.
         /// </summary>
-        private string processFileName;
+        private string _processFileName;
 
         /// <summary>
         /// Arguments sent to the current process.
         /// </summary>
-        private string processArguments;
+        private string _processArguments;
 
         /// <summary>
         /// Occurs when process output is produced.
@@ -397,7 +393,7 @@ namespace ConsoleControlAPI
             {
                 try
                 {
-                    return (process != null && process.HasExited == false);
+                    return (_process != null && _process.HasExited == false);
                 }
                 catch
                 {
@@ -409,10 +405,7 @@ namespace ConsoleControlAPI
         /// <summary>
         /// Gets the internal process.
         /// </summary>
-        public Process Process
-        {
-            get { return process; }
-        }
+        public Process Process => _process;
 
         /// <summary>
         /// Gets the name of the process.
@@ -420,17 +413,11 @@ namespace ConsoleControlAPI
         /// <value>
         /// The name of the process.
         /// </value>
-        public string ProcessFileName
-        {
-            get { return processFileName; }
-        }
+        public string ProcessFileName => _processFileName;
 
         /// <summary>
         /// Gets the process arguments.
         /// </summary>
-        public string ProcessArguments
-        {
-            get { return processArguments; }
-        }
+        public string ProcessArguments => _processArguments;
     }
 }

@@ -22,10 +22,10 @@ namespace ConsoleControl.WPF
             InitializeComponent();
 
             //  Handle process events.
-            processInterface.OnProcessOutput += ProcessInterface_OnProcessOutput;
-            processInterface.OnProcessError += ProcessInterface_OnProcessError;
-            processInterface.OnProcessInput += ProcessInterface_OnProcessInput;
-            processInterface.OnProcessExit += ProcessInterface_OnProcessExit;
+            _processInterface.OnProcessOutput += ProcessInterface_OnProcessOutput;
+            _processInterface.OnProcessError += ProcessInterface_OnProcessError;
+            _processInterface.OnProcessInput += ProcessInterface_OnProcessInput;
+            _processInterface.OnProcessExit += ProcessInterface_OnProcessExit;
 
             //  Wait for key down messages on the rich text box.
             richTextBoxConsole.PreviewKeyDown += richTextBoxConsole_PreviewKeyDown;
@@ -36,7 +36,7 @@ namespace ConsoleControl.WPF
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="args">The <see cref="ProcessEventArgs"/> instance containing the event data.</param>
-        void ProcessInterface_OnProcessError(object sender, ProcessEventArgs args)
+        private void ProcessInterface_OnProcessError(object sender, ProcessEventArgs args)
         {
             //  Write the output, in red
             WriteOutput(args.Content, Colors.Red);
@@ -50,7 +50,7 @@ namespace ConsoleControl.WPF
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="args">The <see cref="ProcessEventArgs"/> instance containing the event data.</param>
-        void ProcessInterface_OnProcessOutput(object sender, ProcessEventArgs args)
+        private void ProcessInterface_OnProcessOutput(object sender, ProcessEventArgs args)
         {
             //  Write the output, in white
             WriteOutput(args.Content, Colors.White);
@@ -64,7 +64,7 @@ namespace ConsoleControl.WPF
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="args">The <see cref="ProcessEventArgs"/> instance containing the event data.</param>
-        void ProcessInterface_OnProcessInput(object sender, ProcessEventArgs args)
+        private void ProcessInterface_OnProcessInput(object sender, ProcessEventArgs args)
         {
             FireProcessInputEvent(args);
         }
@@ -74,7 +74,7 @@ namespace ConsoleControl.WPF
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="args">The <see cref="ProcessEventArgs"/> instance containing the event data.</param>
-        void ProcessInterface_OnProcessExit(object sender, ProcessEventArgs args)
+        private void ProcessInterface_OnProcessExit(object sender, ProcessEventArgs args)
         {
             //  Read only again.
             RunOnUIDispatcher(() =>
@@ -82,7 +82,7 @@ namespace ConsoleControl.WPF
                 //  Are we showing diagnostics?
                 if (ShowDiagnostics)
                 {
-                    WriteOutput(Environment.NewLine + processInterface.ProcessFileName + " exited.", Color.FromArgb(255, 0, 255, 0));
+                    WriteOutput(Environment.NewLine + _processInterface.ProcessFileName + " exited.", Color.FromArgb(255, 0, 255, 0));
                 }
 
                 richTextBoxConsole.IsReadOnly = true;
@@ -97,10 +97,10 @@ namespace ConsoleControl.WPF
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.Windows.Input.KeyEventArgs" /> instance containing the event data.</param>
-        void richTextBoxConsole_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void richTextBoxConsole_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             var caretPosition = richTextBoxConsole.GetCaretPosition();
-            var delta = caretPosition - inputStartPos;
+            var delta = caretPosition - _inputStartPos;
             var inReadOnlyZone = delta < 0;
 
             //  If we're at the input point and it's backspace, bail.
@@ -125,7 +125,7 @@ namespace ConsoleControl.WPF
             if (e.Key == Key.Return)
             {
                 //  Get the input.
-                var input = new TextRange(richTextBoxConsole.GetPointerAt(inputStartPos), richTextBoxConsole.Selection.Start).Text;
+                var input = new TextRange(richTextBoxConsole.GetPointerAt(_inputStartPos), richTextBoxConsole.Selection.Start).Text;
 
                 //  Write the input (without echoing).
                 WriteInput(input, Colors.White, false);
@@ -139,8 +139,8 @@ namespace ConsoleControl.WPF
         /// <param name="color">The color.</param>
         public void WriteOutput(string output, Color color)
         {
-            if (string.IsNullOrEmpty(lastInput) == false &&
-                (output == lastInput || output.Replace("\r\n", "") == lastInput))
+            if (string.IsNullOrEmpty(_lastInput) == false &&
+                (output == _lastInput || output.Replace("\r\n", "") == _lastInput))
                 return;
 
             RunOnUIDispatcher(() =>
@@ -155,7 +155,7 @@ namespace ConsoleControl.WPF
                 //  Record the new input start.
                 richTextBoxConsole.ScrollToEnd();
                 richTextBoxConsole.SetCaretToEnd();
-                inputStartPos = richTextBoxConsole.GetCaretPosition();
+                _inputStartPos = richTextBoxConsole.GetCaretPosition();
             });
         }
 
@@ -165,7 +165,7 @@ namespace ConsoleControl.WPF
         public void ClearOutput()
         {
             richTextBoxConsole.Document.Blocks.Clear();
-            inputStartPos = 0;
+            _inputStartPos = 0;
         }
 
         /// <summary>
@@ -183,13 +183,13 @@ namespace ConsoleControl.WPF
                 {
                     richTextBoxConsole.Selection.ApplyPropertyValue(TextBlock.ForegroundProperty, new SolidColorBrush(color));
                     richTextBoxConsole.AppendText(input);
-                    inputStartPos = richTextBoxConsole.GetEndPosition();
+                    _inputStartPos = richTextBoxConsole.GetEndPosition();
                 }
 
-                lastInput = input;
+                _lastInput = input;
 
                 //  Write the input.
-                processInterface.WriteInput(input);
+                _processInterface.WriteInput(input);
 
                 //  Fire the event.
                 FireProcessInputEvent(new ProcessEventArgs(input));
@@ -241,7 +241,7 @@ namespace ConsoleControl.WPF
             }
 
             //  Start the process.
-            processInterface.StartProcess(processStartInfo);
+            _processInterface.StartProcess(processStartInfo);
 
             RunOnUIDispatcher(() =>
             {
@@ -260,7 +260,7 @@ namespace ConsoleControl.WPF
         public void StopProcess()
         {
             //  Stop the interface.
-            processInterface.StopProcess();
+            _processInterface.StopProcess();
         }
 
         /// <summary>
@@ -286,17 +286,17 @@ namespace ConsoleControl.WPF
         /// <summary>
         /// The internal process interface used to interface with the process.
         /// </summary>
-        private readonly ProcessInterface processInterface = new ProcessInterface();
+        private readonly ProcessInterface _processInterface = new();
 
         /// <summary>
         /// Current position that input starts at.
         /// </summary>
-        private int inputStartPos;
+        private int _inputStartPos;
 
         /// <summary>
         /// The last input string (used so that we can make sure we don't echo input twice).
         /// </summary>
-        private string lastInput;
+        private string _lastInput;
 
         /// <summary>
         /// Occurs when console output is produced.
@@ -309,7 +309,7 @@ namespace ConsoleControl.WPF
         public event ProcessEventHandler OnProcessInput;
 
         private static readonly DependencyProperty ShowDiagnosticsProperty =
-            DependencyProperty.Register("ShowDiagnostics", typeof(bool), typeof(ConsoleControl),
+            DependencyProperty.Register(nameof(ShowDiagnostics), typeof(bool), typeof(ConsoleControl),
                 new PropertyMetadata(false, OnShowDiagnosticsChanged));
 
         /// <summary>
@@ -328,9 +328,8 @@ namespace ConsoleControl.WPF
         {
         }
 
-
         private static readonly DependencyProperty IsInputEnabledProperty =
-            DependencyProperty.Register("IsInputEnabled", typeof(bool), typeof(ConsoleControl),
+            DependencyProperty.Register(nameof(IsInputEnabled), typeof(bool), typeof(ConsoleControl),
                 new PropertyMetadata(true));
 
         /// <summary>
@@ -341,8 +340,8 @@ namespace ConsoleControl.WPF
         /// </value>
         public bool IsInputEnabled
         {
-            get { return (bool)GetValue(IsInputEnabledProperty); }
-            set { SetValue(IsInputEnabledProperty, value); }
+            get => (bool)GetValue(IsInputEnabledProperty);
+            set => SetValue(IsInputEnabledProperty, value);
         }
 
         internal static readonly DependencyPropertyKey IsProcessRunningPropertyKey =
@@ -359,8 +358,8 @@ namespace ConsoleControl.WPF
         /// </value>
         public bool IsProcessRunning
         {
-            get { return (bool)GetValue(IsProcessRunningProperty); }
-            private set { SetValue(IsProcessRunningPropertyKey, value); }
+            get => (bool)GetValue(IsProcessRunningProperty);
+            private set => SetValue(IsProcessRunningPropertyKey, value);
         }
 
         /// <summary>
@@ -369,9 +368,6 @@ namespace ConsoleControl.WPF
         /// <value>
         /// The process interface.
         /// </value>
-        public ProcessInterface ProcessInterface
-        {
-            get { return processInterface; }
-        }
+        public ProcessInterface ProcessInterface => _processInterface;
     }
 }

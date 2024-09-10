@@ -35,7 +35,7 @@ namespace ConsoleControlSample.WPF
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="args">The <see cref="Apex.MVVM.CommandEventArgs"/> instance containing the event data.</param>
-        void StartCommandPromptCommand_Executed(object sender, Apex.MVVM.CommandEventArgs args)
+        private void StartCommandPromptCommand_Executed(object sender, Apex.MVVM.CommandEventArgs args)
         {
             consoleControl.StartProcess("cmd.exe", string.Empty);
             UpdateProcessState();
@@ -46,7 +46,7 @@ namespace ConsoleControlSample.WPF
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="args">The <see cref="Apex.MVVM.CommandEventArgs"/> instance containing the event data.</param>
-        void StartNewProcessCommand_Executed(object sender, Apex.MVVM.CommandEventArgs args)
+        private void StartNewProcessCommand_Executed(object sender, Apex.MVVM.CommandEventArgs args)
         {
         }
 
@@ -55,7 +55,7 @@ namespace ConsoleControlSample.WPF
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="args">The <see cref="Apex.MVVM.CommandEventArgs"/> instance containing the event data.</param>
-        void StopProcessCommand_Executed(object sender, Apex.MVVM.CommandEventArgs args)
+        private void StopProcessCommand_Executed(object sender, Apex.MVVM.CommandEventArgs args)
         {
             consoleControl.StopProcess();
             UpdateProcessState();
@@ -66,7 +66,7 @@ namespace ConsoleControlSample.WPF
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="args">The <see cref="Apex.MVVM.CommandEventArgs"/> instance containing the event data.</param>
-        void ClearOutputCommand_Executed(object sender, Apex.MVVM.CommandEventArgs args)
+        private void ClearOutputCommand_Executed(object sender, Apex.MVVM.CommandEventArgs args)
         {
             consoleControl.ClearOutput();
         }
