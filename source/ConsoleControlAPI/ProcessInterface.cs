@@ -142,11 +142,15 @@ namespace ConsoleControlAPI
             processStartInfo.RedirectStandardInput = true;
             processStartInfo.RedirectStandardOutput = true;
 
+            // Set the working directory to the directory of the process
+            var directoryName = Path.GetDirectoryName(processStartInfo.FileName);
+            if (directoryName != null) processStartInfo.WorkingDirectory = directoryName;
+            
             //  Create the process.
             _process = new Process();
             _process.EnableRaisingEvents = true;
             _process.StartInfo = processStartInfo;
-            _process.Exited += currentProcess_Exited;
+            _process.Exited += CurrentProcess_Exited;
 
             //  Start the process.
             try
@@ -193,7 +197,7 @@ namespace ConsoleControlAPI
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        private void currentProcess_Exited(object sender, EventArgs e)
+        private void CurrentProcess_Exited(object sender, EventArgs e)
         {
             //  Fire process exited.
             FireProcessExitEvent(_process.ExitCode);
@@ -393,7 +397,7 @@ namespace ConsoleControlAPI
             {
                 try
                 {
-                    return (_process != null && _process.HasExited == false);
+                    return _process is { HasExited: false };
                 }
                 catch
                 {
